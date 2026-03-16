@@ -256,7 +256,20 @@ public class QuestionController {
     public BaseResponse<Page<QuestionVO>> searchQuestionVoByPage(QuestionQueryRequest questionQueryRequest, HttpServletRequest request){
         long size = questionQueryRequest.getCurrent();
         ThrowUtils.throwIf(size > 200, ErrorCode.PARAMS_ERROR);
-        Page<Question> questionPage = questionService.searchFromEs(questionQueryRequest);
+        Page<Question> questionPage = null;
+        try {
+            questionPage = questionService.searchFromEs(questionQueryRequest);
+            throw new RuntimeException("暂时的，故意的");
+        } catch (Exception e) {
+            log.error("调用Es失败，开始降级调用mysql");
+            long current = questionQueryRequest.getCurrent();
+            size = questionQueryRequest.getPageSize();
+            // 限制爬虫
+            ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+            // 查询数据库
+            questionPage = questionService.page(new Page<>(current, size),
+                    questionService.getQueryWrapper(questionQueryRequest));
+        }
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 }

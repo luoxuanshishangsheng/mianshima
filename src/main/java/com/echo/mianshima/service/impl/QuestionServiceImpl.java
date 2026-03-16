@@ -130,9 +130,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
         // 排序规则
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField),
-                sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
+            queryWrapper.orderBy(sortField != null && SqlUtils.validSortField(sortField),
+                    sortOrder != null && sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                    sortField);
         return queryWrapper;
     }
 
