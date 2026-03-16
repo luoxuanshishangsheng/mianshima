@@ -6,16 +6,15 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 用户
- * @TableName user
+ * 题库
+ * @TableName question_bank
  */
-@TableName(value ="user")
+@TableName(value ="question_bank")
 @Data
-public class User implements Serializable {
+public class QuestionBank {
     /**
      * id
      */
@@ -23,44 +22,24 @@ public class User implements Serializable {
     private Long id;
 
     /**
-     * 账号
+     * 标题
      */
-    private String userAccount;
+    private String title;
 
     /**
-     * 密码
+     * 描述
      */
-    private String userPassword;
+    private String description;
 
     /**
-     * 微信开放平台id
+     * 图片
      */
-    private String unionId;
+    private String picture;
 
     /**
-     * 公众号openId
+     * 创建用户 id
      */
-    private String mpOpenId;
-
-    /**
-     * 用户昵称
-     */
-    private String userName;
-
-    /**
-     * 用户头像
-     */
-    private String userAvatar;
-
-    /**
-     * 用户简介
-     */
-    private String userProfile;
-
-    /**
-     * 用户角色：user/admin/ban
-     */
-    private String userRole;
+    private Long userId;
 
     /**
      * 编辑时间
