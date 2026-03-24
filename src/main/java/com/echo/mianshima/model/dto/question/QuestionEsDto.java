@@ -73,10 +73,11 @@ public class QuestionEsDto implements Serializable {
     public static QuestionEsDto objToDto(Question question){
         if(question == null)
             return null;
-        QuestionEsDto questionEsDao = BeanUtil.copyProperties(question, QuestionEsDto.class);
+        QuestionEsDto questionEsDao = new QuestionEsDto();
+        BeanUtil.copyProperties(question, questionEsDao);
         String tagsStr = question.getTags();
         if(tagsStr != null){
-            questionEsDao.setTags(JSONUtil.toList(tagsStr, String.class));
+            questionEsDao.setTags(JSONUtil.toList(JSONUtil.parseArray(tagsStr), String.class));
         }
         return questionEsDao;
     }
@@ -84,7 +85,8 @@ public class QuestionEsDto implements Serializable {
     public static Question dtoToObj(QuestionEsDto questionEsDao){
         if(questionEsDao == null)
             return null;
-        Question question = BeanUtil.copyProperties(questionEsDao, Question.class);
+        Question question = new Question();
+        BeanUtil.copyProperties(questionEsDao, question);
         List<String> tags = questionEsDao.getTags();
         if(tags != null && !tags.isEmpty()){
             question.setTags(JSONUtil.toJsonStr(tags));

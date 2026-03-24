@@ -172,3 +172,9 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.echo.mianshima.controller
+# 热 key 探测
+hotkey:
+  app-name: mianshima
+  caffeine-size: 10000
+  push-period: 1000
+  etcd-server: http://192.168.100.129:2379

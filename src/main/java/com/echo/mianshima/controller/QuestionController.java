@@ -1,26 +1,21 @@
 package com.echo.mianshima.controller;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.echo.mianshima.annotation.AuthCheck;
+import com.echo.mianshima.annotation.HotKeyCache;
 import com.echo.mianshima.common.BaseResponse;
 import com.echo.mianshima.common.DeleteRequest;
 import com.echo.mianshima.common.ErrorCode;
 import com.echo.mianshima.common.ResultUtils;
+import com.echo.mianshima.constant.HotKeyConstant;
 import com.echo.mianshima.constant.UserConstant;
 import com.echo.mianshima.exception.BusinessException;
 import com.echo.mianshima.exception.ThrowUtils;
 import com.echo.mianshima.model.dto.question.*;
 import com.echo.mianshima.model.entity.Question;
-import com.echo.mianshima.model.entity.QuestionBankQuestion;
 import com.echo.mianshima.model.entity.User;
 import com.echo.mianshima.model.vo.QuestionVO;
-import com.echo.mianshima.service.QuestionBankQuestionService;
 import com.echo.mianshima.service.QuestionService;
 import com.echo.mianshima.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -143,6 +137,7 @@ public class QuestionController {
      * @return
      */
     @GetMapping("/get/vo")
+    @HotKeyCache(prefix = HotKeyConstant.QUESTION_PREFIX)
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库

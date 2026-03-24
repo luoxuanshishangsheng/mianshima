@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.echo.mianshima.annotation.AuthCheck;
+import com.echo.mianshima.annotation.HotKeyCache;
 import com.echo.mianshima.common.BaseResponse;
 import com.echo.mianshima.common.DeleteRequest;
 import com.echo.mianshima.common.ErrorCode;
 import com.echo.mianshima.common.ResultUtils;
+import com.echo.mianshima.constant.HotKeyConstant;
 import com.echo.mianshima.constant.UserConstant;
 import com.echo.mianshima.exception.BusinessException;
 import com.echo.mianshima.exception.ThrowUtils;
@@ -23,6 +25,7 @@ import com.echo.mianshima.model.vo.QuestionBankVO;
 import com.echo.mianshima.service.QuestionBankService;
 import com.echo.mianshima.service.QuestionService;
 import com.echo.mianshima.service.UserService;
+import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -48,6 +51,8 @@ public class QuestionBankController {
     private final UserService userService;
 
     private final QuestionService questionService;
+
+    private long count = 0;
 
     // region 增删改查
 
@@ -140,10 +145,12 @@ public class QuestionBankController {
      * @return
      */
     @GetMapping("/get/vo")
+    @HotKeyCache(prefix = HotKeyConstant.BANK_PREFIX)
     public BaseResponse<QuestionBankVO> getQuestionBankVOById(QuestionBankQueryRequest questionBankQueryRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Long id = questionBankQueryRequest.getId();
+
         QuestionBank questionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR);
 
@@ -155,7 +162,9 @@ public class QuestionBankController {
             Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
             questionBankVO.setQuestionPage(questionPage);
         }
+
         // 获取封装类
+        System.out.println(++count);
         return ResultUtils.success(questionBankVO);
     }
 
