@@ -1,72 +1,120 @@
-# 数据库初始化
-# @author <a href="https://github.com/liyupi">程序员鱼皮</a>
-# @from <a href="https://yupi.icu">编程导航知识星球</a>
+INSERT INTO mianshima.question (title, content, tags, answer, userId) VALUES
+                                                                ('Redis 支持哪些数据类型？分别适用于什么场景？',
+                                                                 '列举 Redis 的基本和高级数据类型，并说明典型使用场景。',
+                                                                 '["Java", "Redis", "数据结构"]',
+                                                                 '基本类型：\n- String：缓存、计数器（INCR）\n- Hash：对象存储（如用户信息）\n- List：消息队列、最新列表（LPUSH + LTRIM）\n- Set：标签、共同好友（SINTER）\n- ZSet：排行榜、延迟队列（按 score 排序）\n\n高级类型：\n- Bitmap：签到、活跃用户统计\n- HyperLogLog：UV 统计（去重计数）\n- GEO：地理位置（附近的人）\n- Stream：消息队列（支持消费组、ACK）',
+                                                                 2032664157331771394),
 
--- 创建库
-create database if not exists mianshima;
+                                                                ('Redis 的过期键删除策略是什么？',
+                                                                 '解释 Redis 如何处理过期的 key，包括惰性删除和定期删除机制。',
+                                                                 '["Java", "Redis", "内存管理"]',
+                                                                 'Redis 采用 **惰性删除 + 定期删除** 策略：\n1. **惰性删除**：每次访问 key 时检查是否过期，过期则删除（保证准确性，但不及时）\n2. **定期删除**：每秒 10 次随机抽样部分 key 检查并删除过期 key（平衡 CPU 和内存）\n若内存仍不足，会触发 **内存淘汰策略**（如 LRU、LFU）。\n注意：过期 key 不会立即释放内存，可能短暂存在。',
+                                                                 2032664157331771394),
 
--- 切换库
-use mianshima;
+                                                                ('Redis 内存用完了会发生什么？',
+                                                                 '当 Redis 达到 maxmemory 限制时，系统如何响应？',
+                                                                 '["Java", "Redis", "内存管理"]',
+                                                                 'Redis 会根据配置的 **maxmemory-policy** 执行内存淘汰策略，常见策略：\n- noeviction（默认）：写请求返回错误，读正常\n- allkeys-lru：从所有 key 中淘汰最近最少使用的\n- volatile-lru：仅从设置了过期时间的 key 中 LRU 淘汰\n- allkeys-lfu / volatile-lfu：基于访问频率淘汰\n- volatile-ttl：优先淘汰剩余存活时间短的 key\n建议：根据业务选择策略，如缓存用 allkeys-lru，带 TTL 的用 volatile-lru。',
+                                                                 2032664157331771394),
 
--- 用户表
-create table if not exists user
-(
-    id           bigint auto_increment comment 'id' primary key,
-    userAccount  varchar(256)                           not null comment '账号',
-    userPassword varchar(512)                           not null comment '密码',
-    unionId      varchar(256)                           null comment '微信开放平台id',
-    mpOpenId     varchar(256)                           null comment '公众号openId',
-    userName     varchar(256)                           null comment '用户昵称',
-    userAvatar   varchar(1024)                          null comment '用户头像',
-    userProfile  varchar(512)                           null comment '用户简介',
-    userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin/ban',
-    editTime     datetime     default CURRENT_TIMESTAMP not null comment '编辑时间',
-    createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
-    updateTime   datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    isDelete     tinyint      default 0                 not null comment '是否删除',
-    index idx_unionId (unionId)
-) comment '用户' collate = utf8mb4_unicode_ci;
+                                                                ('什么是 Redis Pipeline？它有什么优势？',
+                                                                 '解释 Pipeline 的工作原理及其在批量操作中的作用。',
+                                                                 '["Java", "Redis", "性能优化"]',
+                                                                 'Pipeline 是一种 **网络 I/O 优化技术**：客户端将多个命令一次性发送给 Redis，Redis 依次执行后一次性返回结果。\n优势：\n- 减少 RTT（Round-Trip Time）次数，提升吞吐量\n- 适用于批量操作（如初始化缓存）\n注意：Pipeline 中的命令无事务性（不保证原子性），若需原子性应使用 MULTI/EXEC（但会阻塞其他命令）。\n示例：1000 次 SET 用 Pipeline 可从秒级降至毫秒级。',
+                                                                 2032664157331771394),
 
--- 题库表
-create table if not exists question_bank
-(
-    id          bigint auto_increment comment 'id' primary key,
-    title       varchar(256)                       null comment '标题',
-    description text                               null comment '描述',
-    picture     varchar(2048)                      null comment '图片',
-    userId      bigint                             not null comment '创建用户 id',
-    editTime    datetime default CURRENT_TIMESTAMP not null comment '编辑时间',
-    createTime  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    updateTime  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    isDelete    tinyint  default 0                 not null comment '是否删除',
-    index idx_title (title)
-) comment '题库' collate = utf8mb4_unicode_ci;
+                                                                ('Redis 事务（MULTI/EXEC）能保证原子性吗？',
+                                                                 '分析 Redis 事务的 ACID 特性，特别是原子性和隔离性。',
+                                                                 '["Java", "Redis", "事务"]',
+                                                                 'Redis 事务 **不保证原子性**！\n- EXEC 执行时，若某条命令语法错误（如 SET 传 3 个参数），该命令失败但其余命令仍执行\n- 若运行时错误（如对 String 执行 LPUSH），错误命令跳过，其他继续\n- 无回滚机制（Rollback）\n但 Redis 事务具有 **隔离性**：EXEC 执行期间不会被其他客户端命令打断（因单线程）。\n结论：Redis 事务 ≠ 数据库事务，仅提供命令排队执行，不用于强一致性场景。',
+                                                                 2032664157331771394),
 
--- 题目表
-create table if not exists question
-(
-    id         bigint auto_increment comment 'id' primary key,
-    title      varchar(256)                       null comment '标题',
-    content    text                               null comment '内容',
-    tags       varchar(1024)                      null comment '标签列表（json 数组）',
-    answer     text                               null comment '推荐答案',
-    userId     bigint                             not null comment '创建用户 id',
-    editTime   datetime default CURRENT_TIMESTAMP not null comment '编辑时间',
-    createTime datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    updateTime datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    isDelete   tinyint  default 0                 not null comment '是否删除',
-    index idx_title (title),
-    index idx_userId (userId)
-) comment '题目' collate = utf8mb4_unicode_ci;
+                                                                ('如何使用 Redis 实现延时队列？',
+                                                                 '给出基于 Redis 的延时任务实现方案及优缺点。',
+                                                                 '["Java", "Redis", "队列"]',
+                                                                 '常用方案：\n1. **ZSet 方案**：\n   - score = 执行时间戳\n   - 后台线程轮询 ZRANGEBYSCORE 获取到期任务\n   - 优点：精确、支持取消；缺点：需轮询\n2. **Sorted Set + Timer**：结合定时器减少轮询压力\n3. **Redis Streams + 消费组**：配合外部调度器\n\n不推荐用 List + Sleep，因无法动态调整延迟时间。\n生产建议：对精度要求高可用 RabbitMQ TTL + 死信队列，或专用调度框架（如 Quartz + Redis 分布式锁）。',
+                                                                 2032664157331771394),
 
--- 题库题目表（硬删除）
-create table if not exists question_bank_question
-(
-    id             bigint auto_increment comment 'id' primary key,
-    questionBankId bigint                             not null comment '题库 id',
-    questionId     bigint                             not null comment '题目 id',
-    userId         bigint                             not null comment '创建用户 id',
-    createTime     datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    updateTime     datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    UNIQUE (questionBankId, questionId)
-) comment '题库题目' collate = utf8mb4_unicode_ci;
+                                                                ('Redis 的 BigKey 有什么危害？如何发现和处理？',
+                                                                 '说明大 key 对 Redis 性能的影响及治理方法。',
+                                                                 '["Java", "Redis", "性能优化"]',
+                                                                 '危害：\n- 阻塞主线程（如 DEL 一个含百万元素的 List）\n- 内存碎片化\n- 主从同步慢、OOM 风险\n\n发现：\n- redis-cli --bigkeys\n- MEMORY USAGE key\n- 监控工具（如 RedisInsight）\n\n处理：\n- 拆分：Hash 拆成多个小 Hash，List 分页存储\n- 异步删除：UNLINK 替代 DEL\n- 避免在热 key 上执行 O(N) 命令\n建议：设计阶段限制 value 大小（如 < 10KB）。',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 为什么是单线程的？6.0 之后还是单线程吗？',
+                                                                 '解释 Redis 单线程模型的历史原因及 6.0 的多线程改进。',
+                                                                 '["Java", "Redis", "架构"]',
+                                                                 'Redis 早期（<6.0）**命令执行是单线程**，原因：\n- 内存操作快，CPU 不是瓶颈\n- 多线程需加锁，复杂度高且可能更慢\n- 单线程天然避免并发安全问题\n\nRedis 6.0 引入 **多线程 I/O**：\n- 网络读写（accept、recv、send）由多线程处理\n- **命令执行仍是单线程**（保证原子性）\n开启方式：io-threads > 1 + io-threads-do-reads yes\n效果：提升高并发下的吞吐量，尤其在多核机器上。',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 如何做热点 Key 发现与处理？',
+                                                                 '描述识别和缓解热点 key 的方法。',
+                                                                 '["Java", "Redis", "高并发"]',
+                                                                 '发现方法：\n- 客户端埋点统计访问频率\n- Redis 自带监控：SLOWLOG、MONITOR（慎用）\n- 代理层（如 Codis、Twemproxy）日志分析\n- 使用 redis-faina 等工具分析 tcpdump\n\n处理方案：\n1. **本地缓存**：Caffeine 缓存热点 key，降低 Redis 压力\n2. **key 拆分**：如将 hot_key 拆为 hot_key_1, hot_key_2...，客户端随机访问\n3. **复制多份**：主从读写分离，或 Cluster 多副本\n4. **限流熔断**：防止突发流量压垮实例',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 的 LRU 算法是精确的吗？',
+                                                                 '解释 Redis 内存淘汰时使用的 LRU 实现机制。',
+                                                                 '["Java", "Redis", "算法"]',
+                                                                 'Redis 的 LRU **不是精确 LRU**，而是 **近似 LRU（Approximated LRU）**：\n- 为节省内存，每个 key 只记录 24 位 LRU 时钟（非完整时间戳）\n- 淘汰时随机采样 N 个 key（默认 5 个），从中选 LRU 最旧的\n- 通过调整 sample 参数可提高精度（如 maxmemory-samples 10）\nRedis 4.0+ 还支持 LFU（Least Frequently Used），更适合长期热点场景。',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 主从复制的原理是什么？全量同步和增量同步如何工作？',
+                                                                 '说明 Redis 主从数据同步的流程及触发条件。',
+                                                                 '["Java", "Redis", "高可用"]',
+                                                                 '主从复制流程：\n1. 从节点发送 PSYNC 命令（含 runid 和 offset）\n2. **全量同步**（首次或 offset 太旧）：\n   - 主 fork 子进程生成 RDB 快照\n   - 主将 RDB 发送给从，同时缓存新写命令\n   - 从加载 RDB 后，主发送缓存命令\n3. **增量同步**：主直接发送写命令给从（基于复制积压缓冲区）\n\n关键机制：\n- 复制积压缓冲区（replication backlog）：环形队列，保存最近写命令\n- runid：标识主实例，主重启后 runid 变化，触发全量同步',
+                                                                 2032664157331771394),
+
+                                                                ('哨兵（Sentinel）是如何实现故障转移的？',
+                                                                 '描述 Redis Sentinel 的监控、通知和自动故障切换过程。',
+                                                                 '["Java", "Redis", "高可用"]',
+                                                                 'Sentinel 故障转移步骤：\n1. **主观下线（SDOWN）**：单个 Sentinel 检测主节点超时（down-after-milliseconds）\n2. **客观下线（ODOWN）**：多数 Sentinel 同意主节点下线\n3. **选举 Leader**：Sentinel 间 Raft 投票选出执行故障转移的 Leader\n4. **选新主**：从从节点中选最优（优先级、复制偏移量、runid 字典序）\n5. **配置更新**：通知其他从节点复制新主，并通知客户端\n\n注意：Sentinel 本身也需奇数个（≥3）防脑裂。',
+                                                                 2032664157331771394),
+
+                                                                ('Redis Cluster 的 slot 是如何分配的？',
+                                                                 '解释 Redis Cluster 的数据分片机制及 slot 映射规则。',
+                                                                 '["Java", "Redis", "集群"]',
+                                                                 'Redis Cluster 将 key 空间划分为 **16384 个 slot**：\n- 每个 key 通过 CRC16(key) % 16384 计算所属 slot\n- 每个 master 节点负责一部分 slot（如 3 主则各约 5461 个）\n- 客户端首次访问时，若 key 不在当前节点，返回 MOVED 重定向\n- 支持在线 resharding（迁移 slot）\n\n优点：\n- 水平扩展读写能力\n- 自动故障转移（每个 master 有 slave）\n- 无中心节点，去中心化架构',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 的 RESP 协议是什么？',
+                                                                 '简述 Redis 客户端与服务端通信的协议格式。',
+                                                                 '["Java", "Redis", "网络"]',
+                                                                 'RESP（Redis Serialization Protocol）是 Redis 的文本协议，特点：\n- 简单、可读、高效\n- 支持多种数据类型（简单字符串、错误、整数、批量字符串、数组）\n\n示例：\n```\n*3\r\n$3\r\nSET\r\n$5\r\nmykey\r\n$7\r\nmyvalue\r\n\n```\n- *3：数组长度为 3\n- $3：下一个 bulk string 长度为 3 → "SET"\n\n优点：解析快，易于实现客户端；缺点：相比二进制协议略冗余。',
+                                                                 2032664157331771394),
+
+                                                                ('如何保证 Redis 缓存与数据库的双写一致性？',
+                                                                 '讨论缓存更新策略（Cache-Aside、Read/Write Through 等）及一致性保障。',
+                                                                 '["Java", "Redis", "缓存"]',
+                                                                 '最常用 **Cache-Aside Pattern**：\n- 读：先读缓存，miss 则读 DB 并回填\n- 写：先更新 DB，再删除缓存（非更新！）\n\n**为什么不更新缓存？**\n- 并发下可能脏读（如先更新缓存 A，后更新 DB B，缓存反而旧）\n- 删除更简单，下次读自动加载最新\n\n**最终一致性保障**：\n- 删除缓存失败？用消息队列重试\n- 极端情况（删缓存成功，DB 更新失败）？可接受短暂不一致\n- 强一致？用分布式事务（性能差，一般不推荐）',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 的 Bitmap 有什么应用场景？',
+                                                                 '举例说明 Bitmap 在实际业务中的使用方式。',
+                                                                 '["Java", "Redis", "数据结构"]',
+                                                                 'Bitmap 本质是 String 类型的位操作，适用于：\n1. **用户签到**：\n   - key: sign:2025:1001（用户 1001 2025 年签到）\n   - SETBIT sign:2025:1001 15 1（15 号签到）\n   - BITCOUNT 统计当月签到天数\n2. **活跃用户统计**：每天一个 Bitmap，OR 合并后 BITCOUNT 得 DAU\n3. **布隆过滤器底层**：多个 hash 函数映射到位数组\n优点：内存极省（1 亿用户日活仅 ~12MB）',
+                                                                 2032664157331771394),
+
+                                                                ('HyperLogLog 的原理是什么？适用于什么场景？',
+                                                                 '解释 HyperLogLog 的基数估计算法及其误差范围。',
+                                                                 '["Java", "Redis", "算法"]',
+                                                                 'HyperLogLog 是一种 **概率数据结构**，用于估算集合的 **基数（不重复元素数量）**：\n- 原理：基于“抛硬币”思想——hash 值尾部连续 0 的个数越多，说明样本越大\n- Redis 实现：标准误差约 **0.81%**，仅需 **12KB 内存** 即可统计 2^64 个元素\n- 命令：PFADD（添加）、PFCOUNT（估算）、PFMERGE（合并）\n\n适用场景：\n- UV 统计（页面独立访客）\n- 不需要精确值，但需极低内存开销\n\n不适用：需精确计数或获取具体元素',
+                                                                 2032664157331771394),
+
+                                                                ('Redis Stream 相比 List 作为消息队列有什么优势？',
+                                                                 '对比 Redis Stream 与 List 在消息队列场景下的功能差异。',
+                                                                 '["Java", "Redis", "消息队列"]',
+                                                                 'Stream 优势：\n1. **消费者组（Consumer Group）**：类似 Kafka，支持多消费者负载均衡\n2. **ACK 机制**：消息处理成功后确认，失败可重试\n3. **消息持久化**：即使消费者离线，消息不丢失\n4. **消息 ID 有序**：基于时间戳 + 序列号，天然排序\n5. **阻塞读 + 范围查询**：XRANGE 支持按 ID 范围读取\n\nList 缺陷：\n- BRPOP 无 ACK，消息可能丢失\n- 无消费者组，多实例竞争消费\n- 无消息回溯能力\n\n结论：Stream 是 Redis 官方推荐的消息队列方案。',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 如何防止缓存击穿中的“惊群效应”？',
+                                                                 '当热点 key 过期时，如何避免大量请求同时打到数据库？',
+                                                                 '["Java", "Redis", "高并发"]',
+                                                                 '解决方案：\n1. **互斥锁（Mutex Lock）**：\n   - 第一个请求发现缓存 miss，尝试 SETNX lock\n   - 成功者查 DB 并回填，失败者 sleep 后重试\n2. **逻辑过期（Logical Expire）**：\n   - 缓存中存 {data, expireTime}\n   - 过期后不删除，后台线程异步更新\n   - 请求直接返回旧数据，用户体验无感知\n3. **永不过期 + 定时更新**：适用于可预测数据\n\n推荐：逻辑过期 + 互斥锁组合，兼顾性能与一致性。',
+                                                                 2032664157331771394),
+
+                                                                ('Redis 的 GEO 底层是如何实现的？',
+                                                                 '说明 Redis 地理位置功能的数据结构和命令原理。',
+                                                                 '["Java", "Redis", "数据结构"]',
+                                                                 'GEO 底层使用 **Sorted Set（ZSet）** 实现：\n- 每个地理位置经度、纬度转换为 **52 位 Geohash**（作为 score）\n- member 为地点名称（如 "北京"）\n\n关键命令：\n- GEOADD：添加位置（转 Geohash 后 ZADD）\n- GEORADIUS：计算中心点 Geohash 范围，ZRANGEBYSCORE 查询，再过滤距离\n\n精度：52 位 Geohash 精度约 0.5 米\n限制：不支持多维索引，大规模数据建议用 Elasticsearch',
+                                                                 2032664157331771394);

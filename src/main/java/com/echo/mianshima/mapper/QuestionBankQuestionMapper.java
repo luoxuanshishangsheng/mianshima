@@ -2,6 +2,7 @@ package com.echo.mianshima.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.echo.mianshima.model.entity.QuestionBankQuestion;
+import org.apache.ibatis.annotations.Select;
 
 /**
 * @author 20656

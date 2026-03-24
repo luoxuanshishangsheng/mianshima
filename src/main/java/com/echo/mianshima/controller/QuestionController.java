@@ -1,8 +1,10 @@
 package com.echo.mianshima.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.echo.mianshima.annotation.AuthCheck;
@@ -13,10 +15,7 @@ import com.echo.mianshima.common.ResultUtils;
 import com.echo.mianshima.constant.UserConstant;
 import com.echo.mianshima.exception.BusinessException;
 import com.echo.mianshima.exception.ThrowUtils;
-import com.echo.mianshima.model.dto.question.QuestionAddRequest;
-import com.echo.mianshima.model.dto.question.QuestionEditRequest;
-import com.echo.mianshima.model.dto.question.QuestionQueryRequest;
-import com.echo.mianshima.model.dto.question.QuestionUpdateRequest;
+import com.echo.mianshima.model.dto.question.*;
 import com.echo.mianshima.model.entity.Question;
 import com.echo.mianshima.model.entity.QuestionBankQuestion;
 import com.echo.mianshima.model.entity.User;
@@ -271,5 +270,14 @@ public class QuestionController {
                     questionService.getQueryWrapper(questionQueryRequest));
         }
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest, HttpServletRequest request){
+        // 校验参数
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR, "传入参数非法！");
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIds());
+        return ResultUtils.success(true);
     }
 }

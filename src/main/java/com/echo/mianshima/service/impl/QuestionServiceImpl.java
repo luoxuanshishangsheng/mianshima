@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.echo.mianshima.common.ErrorCode;
 import com.echo.mianshima.constant.CommonConstant;
+import com.echo.mianshima.exception.BusinessException;
 import com.echo.mianshima.exception.ThrowUtils;
 import com.echo.mianshima.mapper.QuestionMapper;
 import com.echo.mianshima.model.dto.question.QuestionEsDto;
@@ -28,6 +29,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +39,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -290,4 +293,39 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return page;
     }
 
+    /**
+     * 批量删除题目
+     *
+     * @param questionIds
+     */
+    public void batchDeleteQuestions(List<Long> questionIds){
+        // 对传递来的参数进行校验
+        ThrowUtils.throwIf(CollUtil.isEmpty(questionIds), ErrorCode.PARAMS_ERROR, "需要删除的题目列表为空");
+
+        // 批量进行删除
+        int batchSize = 1000;
+        int totalSize = questionIds.size();
+        for (int i = 0; i < totalSize; i += batchSize) {
+            QuestionService questionServiceProxy = (QuestionService) AopContext.currentProxy();
+            questionServiceProxy.batchDeleteQuestionsInner(questionIds.subList(i, Math.min(i + batchSize, totalSize)));
+        }
+    }
+
+    /**
+     * 批量删除题目（仅供内部使用）
+     *
+     * @param questionIds
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteQuestionsInner(List<Long> questionIds){
+        boolean result = this.removeBatchByIds(questionIds);
+        if(!result) {
+            log.error("删除题目失败！");
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除题目失败！");
+        }
+
+        LambdaQueryWrapper<QuestionBankQuestion> queryWrapper = new LambdaQueryWrapper<>(QuestionBankQuestion.class)
+                .in(QuestionBankQuestion::getQuestionId, questionIds);
+        questionBankQuestionService.remove(queryWrapper);
+    }
 }

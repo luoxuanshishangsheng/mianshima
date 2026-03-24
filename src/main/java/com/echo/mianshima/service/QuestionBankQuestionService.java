@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.echo.mianshima.model.dto.questionBankQuestion.QuestionBankQuestionQueryRequest;
 import com.echo.mianshima.model.entity.QuestionBankQuestion;
+import com.echo.mianshima.model.entity.User;
 import com.echo.mianshima.model.vo.QuestionBankQuestionVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 题库题目关联服务
@@ -50,4 +53,40 @@ public interface QuestionBankQuestionService extends IService<QuestionBankQuesti
      * @return
      */
     Page<QuestionBankQuestionVO> getQuestionBankQuestionVOPage(Page<QuestionBankQuestion> questionBankQuestionPage, HttpServletRequest request);
+
+    /**
+     * 批量向题库中添加题目
+     *
+     * @param questionIds
+     * @param questionBankId
+     * @return
+     */
+    void batchAddQuestionsToBank(List<Long> questionIds, Long questionBankId, User loginUser);
+
+    /**
+     * 批量向题库中添加题目（仅供内部调用）
+     *
+     * @param questionBankQuestions
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    void batchAddQuestionsToBankInner(List<QuestionBankQuestion> questionBankQuestions);
+
+    /**
+     * 批量从题库中移除题目
+     *
+     * @param questionIds
+     * @param questionBankId
+     * @return
+     */
+    public void batchRemoveQuestionsFromBank(List<Long> questionIds, Long questionBankId);
+
+    /**
+     * 批量从题库中移除题目（仅供内部调用）
+     *
+     * @param questionIds
+     * @param questionBankId
+     * @return
+     */
+    public void batchRemoveQuestionsFromBankInner(List<Long> questionIds, Long questionBankId);
 }
