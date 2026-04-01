@@ -8,7 +8,6 @@ import com.echo.mianshima.model.entity.Question;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
  * 增量同步题目到 es
  */
 // todo 取消注释开启任务
-@Component
+//@Component
 @Slf4j
 @RequiredArgsConstructor
 public class IncSyncQuestionToEs {

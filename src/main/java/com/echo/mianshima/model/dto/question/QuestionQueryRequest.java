@@ -62,25 +62,25 @@ public class QuestionQueryRequest extends PageRequest implements Serializable {
      */
     private Long questionBankId;
 
-    /**
-     * 页码
-     */
-    private int current;
-
-    /**
-     * 页大小
-     */
-    private int pageSize;
-
-    /**
-     * 排序字段
-     */
-    private String sortField;
-
-    /**
-     * 排序方式
-     */
-    private String sortOrder;
+//    /**
+//     * 页码
+//     */
+//    private int current;
+//
+//    /**
+//     * 页大小
+//     */
+//    private int pageSize;
+//
+//    /**
+//     * 排序字段
+//     */
+//    private String sortField;
+//
+//    /**
+//     * 排序方式
+//     */
+//    private String sortOrder;
 
     private static final long serialVersionUID = 1L;
 }

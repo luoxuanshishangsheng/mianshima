@@ -24,6 +24,13 @@ public class HotKeyCacheAspect {
 
     }
 
+    /**
+     * 使用 AOP 在不侵入原业务代码的情况下自动实现先查询本地缓存，本地缓存未存储且该数据是热点数据时自动缓存。
+     *
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
     @Around("hotKeyCachePointcut()")
     public Object hotKeyCache(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
